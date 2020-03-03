@@ -31,10 +31,15 @@ function makeSelect(name, minRange, maxRange)
 	t+= "</select>"; 
 	return t;
 }
+
+function validate() 
+{
+    return true;
+}
 </script>
 
 <h1>Jade Delight</h1>
-<form>
+<form onsubmit="return validate()">
 
 <p>First Name: <input type="text"  name='fname' /></p>
 <p>Last Name*:  <input type="text"  name='lname' /></p>
@@ -42,7 +47,7 @@ function makeSelect(name, minRange, maxRange)
 <p>City: <input type="text"  name='city' /></p>
 <p>Phone*: <input type="text"  name='phone' /></p>
 <p> 
-	<input type="radio"  name="p_or_d" value = "pickup" checked="checked"/>Pickup  
+	<input type="radio"  name="p_or_d" value = "pickup" checked="checked"> Pickup  
 	<input type="radio"  name='p_or_d' value = 'delivery'/>
 	Delivery
 </p>
@@ -76,8 +81,37 @@ function makeSelect(name, minRange, maxRange)
 <p>Total: $ <input type="text"  name='total' id="total" />
 </p>
 
-<input type = "submit" value = "Submit Order" />
-
+<input type = "submit" value = "Submit Order"/>
+<script language="javascript">
+    for (i = 0; i < menuItems.length; i++) {
+        itemName = "quan" + i;
+        var item = document.getElementsByName(itemName);
+        item[0].addEventListener("change", calcOrder);
+        itemName = "quan";
+    }
+    function calcOrder()
+    {
+        itemIndex = this.name.charAt(4);
+        cost = parseFloat(this.value * menuItems[itemIndex].cost).toFixed(2);
+        field = document.getElementsByName("cost");
+        field[itemIndex].value = cost;
+        updateTotal();
+    }
+    function updateTotal()
+    {
+        subtotal = 0;
+        field = document.getElementsByName("cost");
+        for (i = 0; i < menuItems.length; i++) {
+            if (field[i].value == "") {
+                continue;
+            }
+            subtotal += parseFloat(field[i].value);
+        }
+        document.getElementById("subtotal").value = subtotal.toFixed(2);
+        document.getElementById("tax").value = (subtotal * 0.0625).toFixed(2);
+        document.getElementById("total").value = (subtotal * 1.0625).toFixed(2);
+    }
+</script>
 </form>
 </body>
 </html>
