@@ -31,15 +31,10 @@ function makeSelect(name, minRange, maxRange)
 	t+= "</select>"; 
 	return t;
 }
-
-function validate() 
-{
-    return true;
-}
 </script>
 
 <h1>Jade Delight</h1>
-<form onsubmit="return validate()">
+<form>
 
 <p>First Name: <input type="text"  name='fname' /></p>
 <p>Last Name*:  <input type="text"  name='lname' /></p>
@@ -83,12 +78,80 @@ function validate()
 
 <input type = "submit" value = "Submit Order"/>
 <script language="javascript">
+    // Add onsubmit event to the form and call validate()
+    document.forms[0].onsubmit = function() {
+        return validate();
+    }
+    // Date object and time variables
+    date = new Date();
+    hrs = date.getHours();
+    mins = date.getMinutes();
+    function validate()
+    {
+        form = document.forms[0];
+        // Make sure last name is filled
+        if (form.lname.value == "") {
+            form.lname.value = "last name is required";
+            form.lname.select();
+            return false;
+        }
+        // Make sure phone number is filled
+        if (form.phone.value == "") {
+            form.phone.value = "phone number required";
+            form.phone.select();
+            return false;
+        }
+        // Validate phone number with regex
+        var regexPhone = /^(1\s?)?(\(\d{3}\)|\d{3})[\s\-]?\d{3}[\s\-]?\d{4}$/;
+        if (!regexPhone.test(form.phone.value)) {
+            form.phone.value = "valid number required";
+            form.phone.select();
+            return false;
+        }
+        // Check if pickup or delivery and adjust time accordingly
+        // If delivery, check street and city are filled
+        if (form.p_or_d[0].checked)
+            mins += 15;
+        else {
+            mins += 30;
+            if (form.street.value == "") {
+                form.street.value = "street required";
+                form.street.select();
+                return false;
+            }
+            if (form.city.value == "") {
+                form.city.value = "city required";
+                form.city.select();
+                return false;
+            }
+        }
+        // Display new time correctly
+        if (mins >= 60) {
+            if (hrs >= 23) 
+                hrs = "00";
+            else 
+                hrs++;
+            mins = mins % 60;
+            if (mins < 10)
+                mins = "0" + mins;
+        }
+        time = hrs + ":" + mins;
+        // Order message
+        total = document.getElementById("total").value;
+        if (total == "")
+            total = "0.00"
+        total = "$" + total;
+        orderMsg = "Thank you! Your total came out to " + total + " and will be ready by " + time + ".";
+        alert(orderMsg);
+    }
+    // Add onchange event to each drop-down menu
     for (i = 0; i < menuItems.length; i++) {
         itemName = "quan" + i;
         var item = document.getElementsByName(itemName);
         item[0].addEventListener("change", calcOrder);
         itemName = "quan";
     }
+    // Calculate cost of each item
     function calcOrder()
     {
         itemIndex = this.name.charAt(4);
@@ -97,6 +160,7 @@ function validate()
         field[itemIndex].value = cost;
         updateTotal();
     }
+    // Update subtotal, tax and total
     function updateTotal()
     {
         subtotal = 0;
